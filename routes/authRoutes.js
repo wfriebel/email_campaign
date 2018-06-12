@@ -8,7 +8,9 @@ auth.get('/google',
 );
 
 auth.get('/google/callback',
-  passport.authenticate('google')
+  passport.authenticate('google'), (req, res) => {
+    res.send(req.user);
+  }
 );
 
 module.exports = auth;
