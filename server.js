@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
+const RedisStore = require('connect-redis')(session);
 const mongoose = require('mongoose');
 const passport = require('passport');
 

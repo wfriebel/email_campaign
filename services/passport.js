@@ -20,23 +20,18 @@ passport.deserializeUser((id, done) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/auth/google/callback'
-  }, (accessToken, refreshToken, profile, done) => {
-    User.findOne({ googleId: profile.id })
-      .then(user => {
-        if(user) {
-          done(null, user);
-        } else {
-          const user = new User({ googleId: profile.id });
-          user.save()
-            .then((user) => {
-              done(null, user);
-            }).catch(e => {
-              console.log('Error attempting to save a new user', e);
-            });
-        }
-      }).catch(e => {
-        console.log('Error accessing database to find a user', e);
-      })
+    callbackURL: '/auth/google/callback',
+    proxy: true
+  }, async (accessToken, refreshToken, profile, done) => {
+    try {
+      const existingUser = await User.findOne({ googleId: profile.id });
+      if(existingUser) {
+        return done(null, existingUser);
+      }
+      const newUser = await new User({ googleId: profile.id }).save();
+      done(null, newUser);
+    } catch (e) {
+      done(e);
+    }
   })
 );
