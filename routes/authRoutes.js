@@ -7,9 +7,11 @@ auth.get('/google',
   })
 );
 
-auth.get('/google/callback',
-  passport.authenticate('google'), (req, res) => {
-    res.send(req.user);
+auth.get(
+  '/google/callback',
+  passport.authenticate('google'),
+  (req, res) => {
+    res.redirect('/surveys');
   }
 );
 

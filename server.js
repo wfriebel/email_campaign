@@ -1,11 +1,13 @@
+require('./config/config.js');
+
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
-const RedisStore = require('connect-redis')(session);
 const mongoose = require('mongoose');
 const passport = require('passport');
+const bodyParser = require('body-parser');
+const path = require('path');
 
-require('./config/config.js');
 require('./models/User.js');
 require('./services/passport.js');
 require('./database/mongoose.js');
@@ -16,6 +18,7 @@ const apiRoutes = require('./routes/apiRoutes');
 const app = express();
 
 // Middleware
+app.use(bodyParser.json());
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -29,13 +32,12 @@ app.use(passport.session());
 app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);
 
-app.get('/', (req, res) => {
-  if(req.user) {
-    res.send(req.user);
-  } else {
-    res.send('You are currently logged out');
-  }
-})
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('client/build'));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build/index.html'));
+  })
+}
 
 app.listen(process.env.PORT, () => {
   console.log(`Express listening on port ${process.env.PORT}`);
